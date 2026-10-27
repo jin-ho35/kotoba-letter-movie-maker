@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f1eb">
+<title>ことばの手紙 — 動画版をつくる</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Tokumin:wght@400;600;700&family=Murecho:wght@400;600;700&family=Noto+Sans+JP:wght@400;600;700&family=Sawarabi+Mincho&family=Shippori+Mincho:wght@400;600;700&family=Yomogi&family=Yuji+Boku&family=Yuji+Syuku&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f1eb;--ink:#302e28;--muted:#918a7e;--line:#e8e2d8;--accent:#987856;--panel:#fffdfa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.7 "Yu Gothic","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;letter-spacing:.045em}
+button,select,textarea,input{font:inherit}button{cursor:pointer}
+.shell{max-width:1240px;margin:auto;padding:0 28px}
+.topbar{height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.brand{font:18px "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.15em}.brand span,.eyebrow{color:var(--accent)}.brand span{margin-right:8px}
+.topbar small{color:var(--muted);font-size:10px;letter-spacing:.15em}
+.intro{padding:26px 0 18px}.eyebrow{font-size:10px;letter-spacing:.2em}
+h1{margin:5px 0;font:500 clamp(26px,3vw,37px)/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.12em}
+.intro p{margin:0;color:var(--muted);font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.9fr);gap:24px;align-items:start;padding:6px 0 48px}
+.panel,.composer{border:1px solid #ebe5db;background:var(--panel);box-shadow:0 18px 50px #50412c0d}
+.panel{position:sticky;top:12px;padding:16px}
+.head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+h2{margin:0;font:19px "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.1em}
+.head span,.subtle{color:var(--muted);font-size:10px}
+.canvas-wrap{display:grid;place-items:center;min-height:260px;padding:8px;background:#eee9e1;overflow:hidden}
+canvas{display:block;width:auto;height:auto;max-width:100%;max-height:64vh;background:#f5f1eb;box-shadow:0 12px 26px #34281920}
+.transport{display:flex;gap:9px;margin-top:12px}.transport button,.save{flex:1;min-height:44px;border:0;font-size:12px;letter-spacing:.06em}
+.primary{background:#38372f;color:white}.secondary{background:#f2eee7;color:#514d44}
+.note{margin:8px 0 0;color:#9b9488;font-size:10px;text-align:center}
+.composer{padding:21px 23px}
+label{display:block;margin:11px 0 6px;color:#615e56;font-size:11px}
+textarea,select{width:100%;border:1px solid var(--line);border-radius:2px;background:#fffefa;color:var(--ink);outline:none}
+textarea{height:90px;padding:9px 11px;resize:vertical;font:15px/1.8 "Yu Mincho","Hiragino Mincho ProN",serif}
+select{height:38px;padding:0 8px;font-size:12px}
+textarea:focus,select:focus,button:focus-visible,input:focus-visible{outline:2px solid #a98d70;outline-offset:2px}
+.count{text-align:right;color:#aaa397;font-size:10px;margin-top:2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 11px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.size-label{display:flex;justify-content:space-between}.size-label output{color:#8e765b}
+.photo-box,.timeline-box{margin-top:17px;padding-top:14px;border-top:1px solid var(--line)}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.section-head strong{font:16px "Yu Mincho","Hiragino Mincho ProN",serif;font-weight:500}
+.section-head span{color:var(--muted);font-size:10px}
+input[type=file]{width:100%;margin-top:8px;font-size:11px;color:#6c665c}
+.photo-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}
+.photo-card{position:relative;min-width:0;background:#f4f0e9;border:1px solid var(--line);padding:4px}
+.photo-card img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+.photo-card .photo-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:#777064}.photo-card select{height:27px;padding:0 2px;font-size:9px;letter-spacing:0}
+.photo-card button{position:absolute;top:2px;right:2px;width:23px;height:23px;border:0;border-radius:50%;background:#302e28dd;color:white;line-height:1}
+.help{margin:7px 0 0;color:#999286;font-size:10px;line-height:1.7}
+.sequence-list{display:grid;gap:7px;margin-top:9px}
+.sequence-row{display:grid;grid-template-columns:minmax(110px,1fr) auto 76px auto;gap:6px;align-items:center;padding:7px;background:#f7f4ef;border:1px solid #eee8de}
+.sequence-row select{height:34px}
+.sequence-row input[type=range]{width:76px}
+.seconds{font-size:10px;color:#756d61;white-space:nowrap}
+.row-buttons{display:flex;gap:3px}
+.row-buttons button{width:27px;height:29px;border:1px solid #ddd5c9;background:#fffdfa;color:#544e44;font-size:11px;padding:0}
+.add-row{margin-top:8px;width:100%;height:36px;border:1px solid #ded6ca;background:#fffdfa;color:#61594e;font-size:11px}
+.final-time{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:11px}
+.final-time input{width:120px}
+.save{width:100%;min-height:49px;margin-top:18px;background:#8e7151;color:white}
+.save:disabled{opacity:.55;cursor:wait}
+.fine{margin:10px 0 0;color:#999286;font-size:10px;line-height:1.8}
+.status{min-height:20px;margin-top:8px;color:#876a4d;font-size:11px;text-align:center}
+footer{border-top:1px solid var(--line);padding:17px;color:#a29c91;font-size:10px;text-align:center}
+@media(max-width:900px){.shell{max-width:720px;padding:0 18px}.layout{grid-template-columns:1fr;gap:15px}.panel{position:static}.canvas-wrap{min-height:0}canvas{max-height:58vh}}
+@media(max-width:520px){.shell{padding:0 12px}.topbar{height:57px}.brand{font-size:15px}.topbar small{font-size:8px}.intro{padding:20px 0 14px}h1{font-size:25px}.layout{padding-bottom:30px}.panel{padding:10px}.composer{padding:17px 14px}.canvas-wrap{padding:6px}canvas{max-height:52vh}.sequence-row{grid-template-columns:minmax(95px,1fr) auto 62px auto;gap:4px;padding:5px}.sequence-row select{font-size:10px}.sequence-row input[type=range]{width:62px}.row-buttons button{width:24px}.photo-list{gap:5px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ことばの手紙">
+</head>
+<body>
+<main class="shell">
+<header class="topbar"><div class="brand"><span>✳</span>ことばの手紙</div><small>A LETTER, JUST FOR YOU — MOVIE</small></header>
+<section class="intro"><div class="eyebrow">A SMALL MOMENT, MADE SPECIAL</div><h1>言葉と写真を、ひとつの動画に。</h1><p>写真を添えても、言葉だけでも。届ける順番を自由に組み立てられます。</p></section>
+<div class="layout">
+<section class="panel" aria-label="動画プレビュー">
+  <div class="head"><h2>動画プレビュー</h2><span id="formatLabel">縦型 9:16</span></div>
+  <div class="canvas-wrap"><canvas id="movie" width="720" height="1280" role="img" aria-label="封筒、写真、手紙の動画プレビュー"></canvas></div>
+  <div class="transport"><button class="primary" id="playButton" type="button">▶　再生する</button><button class="secondary" id="resetButton" type="button">最初に戻す</button></div>
+  <p class="note" id="durationNote">封筒が開いた後、選んだ順番で表示します</p>
+</section>
+
+<section class="composer" aria-label="動画の手紙をつくる">
+  <div class="head"><h2>動画をつくる</h2><span>写真は任意です</span></div>
+  <label for="messageInput">届けたい言葉</label>
+  <textarea id="messageInput" maxlength="180">いつもありがとう。
+あなたのことを大切に思っています。</textarea>
+  <div class="count"><span id="count">0</span> / 180</div>
+  <p class="help">言葉を空欄にすると、写真だけのスライド動画になります。</p>
+
+  <div class="grid">
+    <div><label for="ratio">動画の向き</label><select id="ratio"><option value="portrait">縦型</option><option value="landscape">横型</option></select></div>
+    <div><label for="splitMode">三分割の向き</label><select id="splitMode">
+      <option value="opposite">縦型便箋：上・中央・下／横型便箋：左・中央・右</option>
+      <option value="paper">縦型便箋：左・中央・右／横型便箋：上・中央・下</option>
+    </select></div>
+    <div><label for="paperSet">封筒と便箋</label><select id="paperSet">
+      <option value="ivory">生成り — アイボリー</option><option value="blush">花霞 — ピンク</option><option value="night">夜空 — ネイビー</option>
+      <option value="ivory-slim">生成り・縦型 — 細身</option><option value="ivory-roomy">生成り・縦型 — ゆったり</option>
+      <option value="blush-slim">花霞・縦型 — 細身</option><option value="blush-roomy">花霞・縦型 — ゆったり</option>
+      <option value="night-slim">夜空・縦型 — 細身</option><option value="night-roomy">夜空・縦型 — ゆったり</option>
+    </select></div>
+    <div><label for="writingMode">文字の向き</label><select id="writingMode"><option value="horizontal">横書き</option><option value="vertical">縦書き</option></select></div>
+    <div><label for="textAlignment">言葉の位置</label><select id="textAlignment"><option value="center">中央寄り</option><option value="right">右寄り</option><option value="left">左寄り</option></select></div>
+    <div><label for="fontSelect">文字のかたち</label><select id="fontSelect"><option value="0">Noto Sans JP</option><option value="1">Yomogi（手書き風）</option><option value="2">Yuji Syuku</option><option value="3">Sawarabi Mincho</option><option value="4">Shippori Mincho</option><option value="5">Yuji Boku（筆文字）</option><option value="6">Kaisei Tokumin</option><option value="7">Murecho</option><option value="8">Zen Kurenaido（手書き風）</option></select></div>
+    <div><label for="weightSelect">文字の太さ</label><select id="weightSelect"><option value="400">ふつう</option><option value="600">少し太め</option><option value="700">太め</option></select></div>
+    <div><label for="effectSelect">言葉の演出</label><select id="effectSelect">
+      <option value="rise">そっと浮かぶ</option><option value="wave">波紋のように</option><option value="glow">一度だけ光る</option><option value="fade">静かに現れる</option>
+      <option value="char-rise">一文字ずつ浮かぶ</option><option value="resolve">文字がほどけて整う</option><option value="light-pass">光がひとすじ通る</option><option value="ink">インクが染み込む</option>
+    </select></div>
+  </div>
+
+  <label class="size-label" for="fontSize"><span>文字の大きさ</span><output><span id="sizeValue">32</span> px</output></label>
+  <input id="fontSize" type="range" min="20" max="48" value="32">
+
+  <div class="photo-box">
+    <div class="section-head"><strong>写真を添える</strong><span id="photoCount">0 / 4 枚</span></div>
+    <input id="photoFiles" type="file" accept="image/*" multiple aria-label="写真を最大4枚選ぶ">
+    <div class="photo-list" id="photoList"></div>
+    <p class="help">写真は最大4枚。縦横比を保って全体が入るように表示します。写真はこの端末内で使い、サーバーには送信しません。</p>
+  </div>
+
+  <div class="timeline-box">
+    <div class="section-head"><strong>表示する順番</strong><span>上下ボタンで並べ替え</span></div>
+    <div class="sequence-list" id="sequenceList"></div>
+    <button class="add-row" id="addScene" type="button">＋ 表示シーンを追加</button>
+    <div class="final-time"><label for="finalDuration">最後の「手紙＋写真」表示</label><input id="finalDuration" type="range" min="2" max="8" value="4"><span><b id="finalSeconds">4</b>秒</span></div>
+    <p class="help">最後の場面には、手紙と登録した写真をまとめて表示します。</p>
+  </div>
+
+  <button class="save" id="exportButton" type="button">動画ファイルを書き出して保存</button>
+  <p class="fine">作成中はこの画面を開いたままにしてください。動画形式はブラウザーが対応するMP4またはWebMです。</p>
+  <div class="status" id="status" aria-live="polite"></div>
+</section>
+</div>
+<footer>ひとつの言葉を、たいせつに。</footer>
+</main>
+
+<script>
+(() => {
+"use strict";
+const $ = selector => document.querySelector(selector);
+const canvas = $("#movie"), ctx = canvas.getContext("2d");
+const input = $("#messageInput"), status = $("#status");
+const openingDuration = 3.2;
+let photos = [];
+let sequence = [{scene:"letter",seconds:3}];
+let playing = false, raf = 0, startedAt = 0;
+
+const palettes = {
+  ivory:{envelope:"#e2d3ba",flap:"#eadfcf",seal:"#9a7455",paper:"#fffdf8",ink:"#302e28",base:"#f0e9dd"},
+  blush:{envelope:"#e4cfc9",flap:"#efdfda",seal:"#ad7c75",paper:"#fff6f4",ink:"#493a37",base:"#f0e3df"},
+  night:{envelope:"#263346",flap:"#39475b",seal:"#b1956c",paper:"#202b3b",ink:"#f6f0e6",base:"#344154"}
+};
+const fonts = [
+  "'Noto Sans JP', sans-serif",
+  "'Yomogi', cursive",
+  "'Yuji Syuku', serif",
+  "'Sawarabi Mincho', serif",
+  "'Shippori Mincho', serif",
+  "'Yuji Boku', serif",
+  "'Kaisei Tokumin', serif",
+  "'Murecho', sans-serif",
+  "'Zen Kurenaido', sans-serif"
+];
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const smooth=n=>{n=clamp(n,0,1);return n*n*(3-2*n)};
+const isPortraitSet=()=>$("#paperSet").value.includes("slim")||$("#paperSet").value.includes("roomy");
+
+function photoById(id){return photos.find(photo=>photo.id===id)}
+function drawImageCover(image,x,y,w,h,radius=0){
+  if(!image||!image.complete||!image.naturalWidth)return;
+  const scale=Math.min(w/image.naturalWidth,h/image.naturalHeight),dw=image.naturalWidth*scale,dh=image.naturalHeight*scale;
+  ctx.save();ctx.beginPath();ctx.roundRect(x,y,w,h,radius);ctx.clip();ctx.fillStyle="#f5f1eb";ctx.fillRect(x,y,w,h);
+  ctx.drawImage(image,x+(w-dw)/2,y+(h-dh)/2,dw,dh);ctx.restore();
+}
+function drawPaper(time,w,h,p,layout=getBoxes(w,h),photoBacked=false){
+  const box=layout.paper,progress=smooth((time-.45)/1.45),lift=(1-progress)*h*.12;
+  ctx.save();ctx.globalAlpha=photoBacked?.94:1;ctx.shadowColor="#30271c35";ctx.shadowBlur=Math.min(w,h)*.025;ctx.shadowOffsetY=Math.min(w,h)*.012;
+  ctx.fillStyle=p.paper;roundedRect(box.x,box.y+lift,box.w,box.h,Math.min(w,h)*.012);ctx.fill();ctx.restore();
+  ctx.save();ctx.strokeStyle=p.ink+(p.ink==="#f6f0e6"?"22":"18");ctx.lineWidth=Math.max(1,Math.min(w,h)*.0012);
+  roundedRect(box.x,box.y+lift,box.w,box.h,Math.min(w,h)*.012);ctx.stroke();ctx.restore();
+}
+function drawEnvelope(time,w,h,p,photo=null){
+  const box=getBoxes(w,h).base,open=smooth((time-.9)/1.2),rise=smooth((time-2.05)/1.05),sealR=Math.min(w,h)*.047;
+  const radius=Math.min(w,h)*.018;
+  // 封筒の背面
+  ctx.save();ctx.shadowColor="#30271c35";ctx.shadowBlur=Math.min(w,h)*.025;ctx.shadowOffsetY=Math.min(w,h)*.012;
+  ctx.fillStyle=p.envelope;roundedRect(box.x,box.y,box.w,box.h,radius);ctx.fill();ctx.restore();
+
+  // 便箋は封筒の内側から上へ移動します。最初は封筒の内側に収まっています。
+  const page={x:box.x+box.w*.13,y:box.y+box.h*(.22-rise*.76),w:box.w*.74,h:box.h*.78};
+  ctx.save();ctx.shadowColor="#30271c28";ctx.shadowBlur=Math.min(w,h)*.012;
+  ctx.fillStyle=p.paper;roundedRect(page.x,page.y,page.w,page.h,Math.min(w,h)*.008);ctx.fill();
+  ctx.strokeStyle="#30271c18";ctx.stroke();ctx.restore();
+  if(photo)drawImageCover(photo.img,page.x+7,page.y+7,page.w-14,page.h-14,Math.min(w,h)*.006);
+
+  // 封筒の前面を重ね、閉じた時の便箋を完全に隠します。
+  ctx.save();ctx.fillStyle=p.envelope;roundedRect(box.x,box.y,box.w,box.h,radius);ctx.fill();ctx.restore();
+
+  // 上蓋だけが見える、シンプルな封筒です。開封時は上端を軸に持ち上がります。
+  ctx.save();ctx.translate(box.x+box.w*.5,box.y+box.h*.08);ctx.scale(1,1-open*1.88);ctx.translate(-(box.x+box.w*.5),-(box.y+box.h*.08));
+  ctx.beginPath();ctx.moveTo(box.x,box.y+box.h*.08);ctx.lineTo(box.x+box.w*.5,box.y+box.h*.56);ctx.lineTo(box.x+box.w,box.y+box.h*.08);ctx.closePath();
+  ctx.fillStyle=p.flap;ctx.fill();ctx.strokeStyle="#30271c18";ctx.lineWidth=Math.max(1,Math.min(w,h)*.001);ctx.stroke();ctx.restore();
+
+  if(open<.82){ctx.save();ctx.beginPath();ctx.arc(box.x+box.w*.5,box.y+box.h*.43,sealR,0,Math.PI*2);ctx.fillStyle=p.seal;ctx.fill();ctx.strokeStyle="#fff9";ctx.lineWidth=Math.max(1,Math.min(w,h)*.002);ctx.stroke();ctx.restore()}
+}
+function drawMessage(time,paper,p,opacity=1,animated=false){
+  const value=input.value||"あなたを大切に思っています。",vertical=$("#writingMode").value==="vertical",requested=Number($("#fontSize").value),align=$("#textAlignment").value;
+  const left=paper.x+paper.w*.10,right=paper.x+paper.w*.90,top=paper.y+paper.h*.10,bottom=paper.y+paper.h*.90;
+  const family=fonts[Number($("#fontSelect").value)]||fonts[0],weight=$("#weightSelect").value;
+  let size=requested,columns=[],lines=[];
+  function wrapHorizontal(fontSize){
+    ctx.font=weight+" "+fontSize+"px "+family;
+    const maxWidth=right-left,result=[];
+    value.split("\n").forEach(paragraph=>{
+      if(!paragraph){result.push("");return}
+      let line="";
+      Array.from(paragraph).forEach(ch=>{
+        const candidate=line+ch;
+        if(line&&ctx.measureText(candidate).width>maxWidth){result.push(line);line=ch}else line=candidate;
+      });
+      result.push(line);
+    });
+    return result;
+  }
+  function wrapVertical(fontSize){
+    const lineHeight=fontSize*1.55,maxRows=Math.max(1,Math.floor((bottom-top)/lineHeight)),result=[];
+    value.split("\n").forEach(paragraph=>{
+      const chars=Array.from(paragraph);
+      if(!chars.length){result.push("");return}
+      for(let i=0;i<chars.length;i+=maxRows)result.push(chars.slice(i,i+maxRows).join(""));
+    });
+    return result;
+  }
+  if(vertical){
+    for(;size>10;size--){columns=wrapVertical(size);if(columns.length*size*1.65<=right-left)break}
+  }else{
+    for(;size>10;size--){lines=wrapHorizontal(size);if(lines.length*size*1.65<=bottom-top)break}
+  }
+  ctx.font=weight+" "+size+"px "+family;
+  const glyphs=[];
+  if(vertical){
+    const lineHeight=size*1.55,colWidth=size*1.65,blockWidth=columns.length*colWidth;
+    const startRight=align==="right"?right:align==="left"?left+blockWidth-colWidth:(left+right+blockWidth-colWidth)/2;
+    columns.forEach((column,columnIndex)=>Array.from(column).forEach((ch,charIndex)=>{
+      glyphs.push({ch,x:startRight-columnIndex*colWidth,y:top+size*.55+charIndex*lineHeight,vertical:true});
+    }));
+  }else{
+    const lineHeight=size*1.65,blockHeight=lines.length*lineHeight,startY=top+((bottom-top)-blockHeight)/2+lineHeight/2;
+    lines.forEach((line,lineIndex)=>{
+      const chars=Array.from(line),lineWidth=ctx.measureText(line).width;
+      let x=align==="left"?left:align==="right"?right-lineWidth:(left+right-lineWidth)/2;
+      chars.forEach(ch=>{const width=ctx.measureText(ch).width;glyphs.push({ch,x,y:startY+lineIndex*lineHeight,vertical:false});x+=width});
+    });
+  }
+  const effect=animated?$("#effectSelect").value:"none",elapsed=Math.max(0,time),count=Math.max(1,glyphs.length);
+  const smooth01=n=>{n=Math.max(0,Math.min(1,n));return n*n*(3-2*n)};
+  ctx.save();ctx.beginPath();ctx.rect(left,top,right-left,bottom-top);ctx.clip();
+  glyphs.forEach((glyph,index)=>{
+    const fraction=count===1?0:index/(count-1),order=vertical?fraction:fraction;
+    let alpha=1,offsetY=0,offsetX=0,turn=0,highlight=0;
+    if(effect==="rise"){const q=smooth01(elapsed/.85);alpha=q;offsetY=(1-q)*size*1.4}
+    else if(effect==="wave"){const q=smooth01(elapsed/1.55);alpha=q;offsetY=Math.sin(elapsed*7-index*.48)*(1-q)*size*.9}
+    else if(effect==="fade"){alpha=smooth01(elapsed/1.8)}
+    else if(effect==="char-rise"){const q=smooth01((elapsed-order*1.15)/.38);alpha=q;offsetY=(1-q)*size*1.5}
+    else if(effect==="resolve"){const q=smooth01((elapsed-order*.48)/.72),seed=(index*9301+49297)%233280;alpha=q;offsetX=(1-q)*(((seed/233280)-.5)*size*4);offsetY=(1-q)*((((seed*17%233280)/233280)-.5)*size*3);turn=(1-q)*(((seed*7%233280)/233280-.5)*.42)}
+    else if(effect==="ink"){const q=smooth01((elapsed-order*.50)/.52);alpha=q}
+    else if(effect==="glow"){alpha=smooth01(elapsed/.38);highlight=elapsed<1.65?Math.max(0,Math.sin(Math.PI*(elapsed-.25)/1.4)):0}
+    else if(effect==="light-pass"){alpha=smooth01(elapsed/.30);const sweep=(elapsed-.22)/1.45;highlight=Math.max(0,1-Math.abs(order-sweep)/.15)}
+    else {alpha=1}
+    if(alpha<=.005)return;
+    ctx.save();ctx.globalAlpha=opacity*alpha;ctx.font=weight+" "+size+"px "+family;
+    ctx.textBaseline="middle";ctx.textAlign=glyph.vertical?"center":"left";
+    ctx.translate(glyph.x+offsetX,glyph.y+offsetY);if(turn)ctx.rotate(turn);
+    if(effect==="glow"&&highlight>.01){
+      ctx.shadowColor="rgba(255,232,145,.98)";ctx.shadowBlur=size*(1.8+2.3*highlight);ctx.lineWidth=Math.max(2,size*.13);
+      ctx.strokeStyle="rgba(255,250,214,"+Math.min(1,highlight*.95)+")";ctx.strokeText(glyph.ch,0,0);
+      ctx.fillStyle="#fff9dd";ctx.fillText(glyph.ch,0,0);
+    }else if(effect==="light-pass"&&highlight>.04){
+      ctx.shadowColor="rgba(255,244,178,1)";ctx.shadowBlur=size*(1.5+2.8*highlight);ctx.lineWidth=Math.max(2,size*.16);
+      ctx.strokeStyle="rgba(255,255,235,"+Math.min(1,highlight)+")";ctx.strokeText(glyph.ch,0,0);
+      ctx.fillStyle=highlight>.35?"#fffde9":p.ink;ctx.fillText(glyph.ch,0,0);
+    }else if(effect==="ink"&&alpha<.98){
+      ctx.shadowColor=p.ink;ctx.shadowBlur=(1-alpha)*size*.55;ctx.fillStyle=p.ink;ctx.fillText(glyph.ch,0,0);
+    }else{ctx.fillStyle=p.ink;ctx.fillText(glyph.ch,0,0)}
+    ctx.restore();
+  });
+  ctx.restore();
+}
+function roundedRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function resizeCanvas(){
+  const landscape=$("#ratio").value==="landscape";
+  canvas.width=landscape?1280:720; canvas.height=landscape?720:1280;
+  $("#formatLabel").textContent=landscape?"横型 16:9":"縦型 9:16";
+  renderAt(0);
+}
+function getBoxes(w,h){
+  if(isPortraitSet()){
+    return {base:{x:w*.10,y:h*.13,w:w*.80,h:h*.74},paper:{x:w*.17,y:h*.17,w:w*.66,h:h*.66}};
+  }
+  if($("#ratio").value==="landscape"){
+    return {base:{x:w*.06,y:h*.12,w:w*.88,h:h*.76},paper:{x:w*.15,y:h*.18,w:w*.70,h:h*.64}};
+  }
+  return {base:{x:w*.035,y:h*.245,w:w*.93,h:h*.51},paper:{x:w*.075,y:h*.29,w:w*.85,h:h*.42}};
+}
+function drawBackground(w,h){
+  const g=ctx.createRadialGradient(w/2,h*.45,10,w/2,h/2,Math.max(w,h)*.72);
+  g.addColorStop(0,"#fffdfb");g.addColorStop(1,"#eae4da");
+  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillStyle="rgba(111,99,83,.7)";ctx.font=Math.round(Math.min(w,h)*.018)+"px sans-serif";
+  ctx.fillText("A LETTER, JUST FOR YOU",w/2,h*.075);
+  ctx.fillText("ひとつの言葉を、たいせつに。",w/2,h*.93);
+}
+function sidePhotoZones(){
+  return $("#splitMode").value==="paper" ? isPortraitSet() : !isPortraitSet();
+}
+function getFinalBoxes(w,h){
+  if(sidePhotoZones()){
+    if($("#ratio").value==="portrait")return {base:{x:w*.25,y:h*.10,w:w*.50,h:h*.80},paper:{x:w*.28,y:h*.13,w:w*.44,h:h*.74}};
+    return {base:{x:w*.29,y:h*.07,w:w*.42,h:h*.86},paper:{x:w*.32,y:h*.10,w:w*.36,h:h*.80}};
+  }
+  if($("#ratio").value==="portrait")return {base:{x:w*.02,y:h*.28,w:w*.96,h:h*.44},paper:{x:w*.05,y:h*.30,w:w*.90,h:h*.40}};
+  return {base:{x:w*.08,y:h*.28,w:w*.84,h:h*.44},paper:{x:w*.11,y:h*.30,w:w*.78,h:h*.40}};
+}
+function drawPhotosInZones(items,w,h){
+  if(!items.length)return;
+  const side=sidePhotoZones();let zones;
+  if(side){
+    const zoneW=$("#ratio").value==="portrait"?w*.24:w*.27;
+    zones={
+      1:{x:w*.02,y:h*.12,w:zoneW,h:h*.76},
+      3:{x:w-(w*.02)-zoneW,y:h*.12,w:zoneW,h:h*.76}
+    };
+  }else{
+    zones={
+      1:{x:w*.02,y:h*.105,w:w*.96,h:h*.17},
+      3:{x:w*.02,y:h*.725,w:w*.96,h:h*.17}
+    };
+  }
+  [1,3].forEach(zone=>{
+    const group=items.filter(photo=>Number(photo.zone)===zone),area=zones[zone];
+    if(!group.length)return;
+    const gap=Math.min(area.w,area.h)*.025;
+    group.forEach((photo,index)=>{
+      let box;
+      if(side){
+        const cellH=(area.h-gap*(group.length-1))/group.length;
+        box={x:area.x,y:area.y+index*(cellH+gap),w:area.w,h:cellH};
+      }else{
+        const cellW=(area.w-gap*(group.length-1))/group.length;
+        box={x:area.x+index*(cellW+gap),y:area.y,w:cellW,h:area.h};
+      }
+      const radius=Math.min(box.w,box.h)*.045;
+      ctx.save();ctx.shadowColor="#30271c45";ctx.shadowBlur=radius;ctx.shadowOffsetY=radius*.35;
+      ctx.fillStyle="#fffdf9";roundedRect(box.x-radius*.18,box.y-radius*.18,box.w+radius*.36,box.h+radius*.36,radius);ctx.fill();ctx.restore();
+      drawImageCover(photo.img,box.x,box.y,box.w,box.h,radius*.7);
+    });
+  });
+}
+function drawPhotoBackgroundUnused(items,w,h){
+  if(!items.length)return;
+  const portrait=$("#ratio").value==="portrait",x0=w*.02,y0=h*.105,areaW=w*.96,areaH=h*.79,g=w*.012;
+  let slots=[];
+  if(items.length===1)slots=[{x:x0,y:y0,w:areaW,h:areaH}];
+  else if(portrait&&items.length===2){
+    const hh=(areaH-g)/2;slots=[{x:x0,y:y0,w:areaW,h:hh},{x:x0,y:y0+hh+g,w:areaW,h:hh}];
+  }else if(!portrait&&items.length===2){
+    const ww=(areaW-g)/2;slots=[{x:x0,y:y0,w:ww,h:areaH},{x:x0+ww+g,y:y0,w:ww,h:areaH}];
+  }else if(portrait&&items.length===3){
+    const ww=(areaW-g)/2,hh=(areaH-g)/2;
+    slots=[{x:x0,y:y0,w:ww,h:hh},{x:x0+ww+g,y:y0,w:ww,h:hh},{x:x0,y:y0+hh+g,w:areaW,h:hh}];
+  }else if(!portrait&&items.length===3){
+    const ww=(areaW-g)/2,hh=(areaH-g)/2;
+    slots=[{x:x0,y:y0,w:ww,h:areaH},{x:x0+ww+g,y:y0,w:ww,h:hh},{x:x0+ww+g,y:y0+hh+g,w:ww,h:hh}];
+  }else{
+    const ww=(areaW-g)/2,hh=(areaH-g)/2;
+    slots=[{x:x0,y:y0,w:ww,h:hh},{x:x0+ww+g,y:y0,w:ww,h:hh},{x:x0,y:y0+hh+g,w:ww,h:hh},{x:x0+ww+g,y:y0+hh+g,w:ww,h:hh}];
+  }
+  ctx.fillStyle="#e9e2d8";ctx.fillRect(0,0,w,h);
+  items.slice(0,4).forEach((photo,i)=>{
+    const b=slots[i];if(!b)return;
+    drawImageCover(photo.img,b.x,b.y,b.w,b.h,Math.min(w,h)*.006);
+    ctx.strokeStyle="rgba(255,253,248,.72)";ctx.lineWidth=Math.max(2,Math.min(w,h)*.003);
+    roundedRect(b.x,b.y,b.w,b.h,Math.min(w,h)*.006);ctx.stroke();
+  });
+  const band=h*.105;
+  ctx.fillStyle="rgba(245,241,235,.92)";ctx.fillRect(0,0,w,band);ctx.fillRect(0,h-band,w,band);
+  ctx.fillStyle="rgba(111,99,83,.78)";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.font=Math.round(Math.min(w,h)*.018)+"px sans-serif";
+  ctx.fillText("A LETTER, JUST FOR YOU",w/2,band/2);
+  ctx.fillText("ひとつの言葉を、たいせつに。",w/2,h-band/2);
+}
+function drawLetterScene(time,opacity,finalScene){
+  const w=canvas.width,h=canvas.height,key=$("#paperSet").value.split("-")[0],p=palettes[key]||palettes.ivory;
+  const boxes=getFinalBoxes(w,h),paper=boxes.paper;
+  if(finalScene&&photos.length)drawPhotosInZones(photos,w,h);
+  drawPaper(3.2,w,h,p,boxes,false);
+  if(finalScene)drawMessage(10,paper,p,opacity,false,false);
+  else drawMessage(time,paper,p,opacity,true,false);
+}
+function drawSinglePhoto(photo,time){
+  if(!photo)return;
+  const w=canvas.width,h=canvas.height,portrait=$("#ratio").value==="portrait";
+  const area=portrait?{x:w*.08,y:h*.15,w:w*.84,h:h*.70}:{x:w*.10,y:h*.14,w:w*.80,h:h*.72};
+  ctx.save();ctx.globalAlpha=smooth((time-.15)/.45);ctx.shadowColor="#30271c40";ctx.shadowBlur=Math.min(w,h)*.035;
+  ctx.fillStyle="#fffdf8";roundedRect(area.x,area.y,area.w,area.h,Math.min(w,h)*.02);ctx.fill();ctx.restore();
+  drawImageCover(photo.img,area.x+8,area.y+8,area.w-16,area.h-16,Math.min(w,h)*.015);
+}
+function drawPhotoGrid(items,w,h){
+  const photosToShow=items.slice(0,4),count=photosToShow.length;
+  ctx.fillStyle="#eee8df";ctx.fillRect(0,0,w,h);
+  const gap=Math.max(8,Math.min(w,h)*.014),outer=Math.max(8,Math.min(w,h)*.018);
+  const innerW=w-outer*2,innerH=h-outer*2,portrait=$("#ratio").value==="portrait";
+  let boxes=[];
+  if(count===1)boxes=[{x:outer,y:outer,w:innerW,h:innerH}];
+  else if(count===2&&portrait){
+    const cellH=(innerH-gap)/2;boxes=[{x:outer,y:outer,w:innerW,h:cellH},{x:outer,y:outer+cellH+gap,w:innerW,h:cellH}];
+  }else if(count===2){
+    const cellW=(innerW-gap)/2;boxes=[{x:outer,y:outer,w:cellW,h:innerH},{x:outer+cellW+gap,y:outer,w:cellW,h:innerH}];
+  }else if(count===3&&portrait){
+    const cellW=(innerW-gap)/2,cellH=(innerH-gap)/2;
+    boxes=[{x:outer+cellW/2+gap/2,y:outer,w:cellW,h:cellH},{x:outer,y:outer+cellH+gap,w:cellW,h:cellH},{x:outer+cellW+gap,y:outer+cellH+gap,w:cellW,h:cellH}];
+  }else if(count===3){
+    const cellW=(innerW-gap)/2,cellH=(innerH-gap)/2;
+    boxes=[{x:outer,y:outer,w:cellW,h:innerH},{x:outer+cellW+gap,y:outer,w:cellW,h:cellH},{x:outer+cellW+gap,y:outer+cellH+gap,w:cellW,h:cellH}];
+  }else{
+    const cellW=(innerW-gap)/2,cellH=(innerH-gap)/2;
+    boxes=[{x:outer,y:outer,w:cellW,h:cellH},{x:outer+cellW+gap,y:outer,w:cellW,h:cellH},{x:outer,y:outer+cellH+gap,w:cellW,h:cellH},{x:outer+cellW+gap,y:outer+cellH+gap,w:cellW,h:cellH}];
+  }
+  photosToShow.forEach((photo,index)=>{
+    const box=boxes[index];ctx.fillStyle="#fffdf8";roundedRect(box.x,box.y,box.w,box.h,Math.min(w,h)*.012);ctx.fill();
+    drawImageCover(photo.img,box.x+5,box.y+5,box.w-10,box.h-10,Math.min(w,h)*.009);
+  });
+}
+function hasMessage(){return input.value.trim().length>0}
+function readyToPlay(){
+  if(!hasMessage()&&photos.length<1){status.textContent="言葉を空欄にする場合は、写真を1枚以上登録してください。";return false}
+  return true;
+}
+function scenes(){
+  if(hasMessage())return sequence.map(item=>({scene:item.scene,seconds:item.seconds}));
+  const ordered=[],seen=new Set();
+  sequence.forEach(item=>{if(item.scene.startsWith("photo-")&&!seen.has(item.scene)){seen.add(item.scene);ordered.push(item)}});
+  photos.forEach(photo=>{const scene="photo-"+photo.id;if(!seen.has(scene)){seen.add(scene);ordered.push({scene,seconds:2.5})}});
+  return ordered.map(item=>({scene:item.scene,seconds:item.seconds||2.5}));
+}
+function totalDuration(){
+  return openingDuration+scenes().reduce((sum,item)=>sum+item.seconds,0)+Number($("#finalDuration").value);
+}
+function renderAt(time){
+  const w=canvas.width,h=canvas.height,key=$("#paperSet").value.split("-")[0],p=palettes[key]||palettes.ivory;
+  ctx.clearRect(0,0,w,h);drawBackground(w,h);
+  if(time<openingDuration){drawEnvelope(time,w,h,p,hasMessage()?null:photos[0]);return}
+  let local=time-openingDuration;
+  for(const item of scenes()){
+    if(local<item.seconds){
+      const opacity=smooth(local/.38);
+      if(item.scene==="letter")drawLetterScene(local,opacity,false);
+      else drawSinglePhoto(photoById(item.scene.slice(6)),local);
+      return;
+    }
+    local-=item.seconds;
+  }
+  if(hasMessage())drawLetterScene(10,1,true);else drawPhotoGrid(photos,w,h);
+}
+function stopPreview(){playing=false;cancelAnimationFrame(raf)}
+function resetPreview(){stopPreview();renderAt(0);$("#playButton").textContent="▶　再生する";status.textContent=""}
+function playPreview(){
+  if(playing||!readyToPlay())return;
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches){renderAt(totalDuration());$("#playButton").textContent="▶　もう一度再生";return}
+  playing=true;startedAt=performance.now();$("#playButton").textContent="再生中…";
+  function tick(now){if(!playing)return;const t=Math.min((now-startedAt)/1000,totalDuration());renderAt(t);if(t>=totalDuration()){stopPreview();$("#playButton").textContent="▶　もう一度再生"}else raf=requestAnimationFrame(tick)}
+  raf=requestAnimationFrame(tick);
+}
+function refresh(){
+  $("#count").textContent=input.value.length;$("#sizeValue").textContent=$("#fontSize").value;
+  $("#finalSeconds").textContent=$("#finalDuration").value;
+  $("#durationNote").textContent=hasMessage()?"全体 約"+Math.round(totalDuration())+"秒（封筒が開く場面を含む）":"全体 約"+Math.round(totalDuration())+"秒（写真だけのスライド）";
+  renderAt(0);
+}
+function renderPhotoCards(){
+  const list=$("#photoList");list.replaceChildren();
+  photos.forEach((photo,index)=>{
+    const card=document.createElement("div");card.className="photo-card";
+    const img=document.createElement("img");img.src=photo.url;img.alt="写真"+(index+1);
+    const name=document.createElement("span");name.className="photo-name";name.textContent="写真"+(index+1);
+    const place=document.createElement("select");place.setAttribute("aria-label","写真"+(index+1)+"の表示位置");
+    const first=document.createElement("option");first.value="1";first.textContent=sidePhotoZones()?"1 左":"1 上";
+    const third=document.createElement("option");third.value="3";third.textContent=sidePhotoZones()?"3 右":"3 下";
+    place.append(first,third);place.value=String(photo.zone||((index%2)?3:1));
+    place.addEventListener("change",()=>{photo.zone=Number(place.value);refresh()});
+    const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","写真"+(index+1)+"を削除");
+    remove.addEventListener("click",()=>removePhoto(photo.id));
+    card.append(img,name,place,remove);list.append(card);
+  });
+  $("#photoCount").textContent=photos.length+" / 4 枚";
+}
+function photoOptions(){
+  return photos.map((p,i)=>({value:"photo-"+p.id,label:"写真"+(i+1)}));
+}
+function renderTimeline(){
+  const list=$("#sequenceList");list.replaceChildren();
+  sequence.forEach((item,index)=>{
+    const row=document.createElement("div");row.className="sequence-row";
+    const select=document.createElement("select");select.setAttribute("aria-label","シーン"+(index+1));
+    const options=[...photoOptions(),{value:"letter",label:"手紙アニメーション"}];
+    options.forEach(option=>{const el=document.createElement("option");el.value=option.value;el.textContent=option.label;select.append(el)});
+    if(!options.some(o=>o.value===item.scene))item.scene=options[0]?.value||"letter";
+    select.value=item.scene;select.addEventListener("change",()=>{item.scene=select.value;refresh()});
+    const range=document.createElement("input");range.type="range";range.min="1";range.max="6";range.step="0.5";range.value=item.seconds;range.setAttribute("aria-label","表示時間");
+    const seconds=document.createElement("span");seconds.className="seconds";seconds.textContent=item.seconds+"秒";
+    range.addEventListener("input",()=>{item.seconds=Number(range.value);seconds.textContent=item.seconds+"秒";refresh()});
+    const buttons=document.createElement("div");buttons.className="row-buttons";
+    const up=document.createElement("button");up.type="button";up.textContent="↑";up.setAttribute("aria-label","上へ移動");up.disabled=index===0;
+    up.addEventListener("click",()=>moveScene(index,-1));
+    const down=document.createElement("button");down.type="button";down.textContent="↓";down.setAttribute("aria-label","下へ移動");down.disabled=index===sequence.length-1;
+    down.addEventListener("click",()=>moveScene(index,1));
+    const del=document.createElement("button");del.type="button";del.textContent="×";del.setAttribute("aria-label","シーンを削除");
+    del.addEventListener("click",()=>{sequence.splice(index,1);if(!sequence.length)sequence.push({scene:"letter",seconds:3});renderTimeline();refresh()});
+    buttons.append(up,down,del);row.append(select,range,seconds,buttons);list.append(row);
+  });
+}
+function moveScene(index,direction){const target=index+direction;if(target<0||target>=sequence.length)return;[sequence[index],sequence[target]]=[sequence[target],sequence[index]];renderTimeline();refresh()}
+function addScene(){
+  if(sequence.length>=12){status.textContent="シーンは12個まで追加できます。";return}
+  const firstPhoto=photos[0];
+  sequence.push({scene:firstPhoto?"photo-"+firstPhoto.id:"letter",seconds:3});
+  renderTimeline();refresh();
+}
+function removePhoto(id){
+  const photo=photoById(id);if(photo)URL.revokeObjectURL(photo.url);
+  photos=photos.filter(p=>p.id!==id);
+  sequence=sequence.filter(s=>s.scene!=="photo-"+id);
+  if(!sequence.length)sequence.push({scene:"letter",seconds:3});
+  renderPhotoCards();renderTimeline();refresh();
+}
+$("#photoFiles").addEventListener("change",event=>{
+  const files=Array.from(event.target.files||[]);
+  for(const file of files){
+    if(photos.length>=4)break;
+    if(!file.type.startsWith("image/"))continue;
+    const id="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>refresh();img.src=url;
+    photos.push({id,url,img,zone:(photos.length%2)?3:1});
+    if(!sequence.some(s=>s.scene==="photo-"+id)){
+      const letterIndex=sequence.findIndex(s=>s.scene==="letter");
+      sequence.splice(letterIndex<0?sequence.length:letterIndex,0,{scene:"photo-"+id,seconds:2.5});
+    }
+  }
+  event.target.value="";
+  renderPhotoCards();renderTimeline();refresh();
+  if(photos.length>=4)status.textContent="写真は4枚まで登録できます。";
+});
+function supportedType(){
+  if(!window.MediaRecorder)return"";
+  const types=["video/mp4;codecs=avc1.42E01E","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"];
+  return types.find(type=>MediaRecorder.isTypeSupported(type))||"";
+}
+function exportVideo(){
+  if(!readyToPlay())return;
+  const type=supportedType(),button=$("#exportButton");
+  if(!canvas.captureStream||!type){status.textContent="このブラウザーでは動画書き出しに対応していません。最新版のChromeまたはSafariでお試しください。";return}
+  button.disabled=true;status.textContent="動画を作成しています。画面を開いたままお待ちください…";
+  const stream=canvas.captureStream(30),chunks=[];let recorder;
+  try{recorder=new MediaRecorder(stream,{mimeType:type,videoBitsPerSecond:3500000})}
+  catch(error){stream.getTracks().forEach(t=>t.stop());button.disabled=false;status.textContent="動画記録を開始できませんでした。別のブラウザーでお試しください。";return}
+  recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  recorder.onerror=()=>{stream.getTracks().forEach(t=>t.stop());button.disabled=false;status.textContent="動画を作成できませんでした。もう一度お試しください。"};
+  recorder.onstop=()=>{
+    stream.getTracks().forEach(t=>t.stop());button.disabled=false;
+    const mime=recorder.mimeType||type,ext=mime.includes("mp4")?"mp4":"webm",blob=new Blob(chunks,{type:mime});
+    if(!blob.size){status.textContent="動画データを作成できませんでした。";return}
+    const url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download="ことばの手紙-動画版."+ext;document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    status.textContent="動画を保存しました（"+ext.toUpperCase()+"）。端末のダウンロード一覧をご確認ください。";
+    renderAt(totalDuration());$("#playButton").textContent="▶　もう一度再生";
+  };
+  recorder.start(250);const t0=performance.now(),whole=totalDuration();
+  function frame(now){const t=Math.min((now-t0)/1000,whole);renderAt(t);if(t<whole)requestAnimationFrame(frame);else setTimeout(()=>{if(recorder.state!=="inactive")recorder.stop()},180)}
+  requestAnimationFrame(frame);
+}
+function updateWritingMode(){if(isPortraitSet())$("#writingMode").value="vertical";renderPhotoCards();refresh()}
+$("#playButton").addEventListener("click",playPreview);
+$("#resetButton").addEventListener("click",resetPreview);
+$("#exportButton").addEventListener("click",exportVideo);
+$("#addScene").addEventListener("click",addScene);
+input.addEventListener("input",refresh);
+["paperSet","writingMode","textAlignment","fontSelect","weightSelect","effectSelect","fontSize","finalDuration"].forEach(id=>{
+  $("#"+id).addEventListener("input",refresh);$("#"+id).addEventListener("change",refresh);
+});
+$("#paperSet").addEventListener("change",updateWritingMode);
+$("#ratio").addEventListener("change",()=>{resizeCanvas();renderPhotoCards();refresh()});
+$("#splitMode").addEventListener("change",()=>{renderPhotoCards();refresh()});
+matchMedia("(prefers-reduced-motion: reduce)").addEventListener?.("change",()=>{if(playing)resetPreview()});
+document.fonts?.ready.then(()=>refresh());
+renderPhotoCards();renderTimeline();resizeCanvas();refresh();
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
